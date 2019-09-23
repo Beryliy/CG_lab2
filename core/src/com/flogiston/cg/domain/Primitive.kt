@@ -5,7 +5,9 @@ import kotlin.math.sin
 
 class Primitive (
         n : Int, //pi * n
-        val step : Float
+        val center : Coordinates,
+        val step : Float,
+        var angle : Float
 ) {
     val tMin = 0.0f
     val tMax = (Math.PI * n).toFloat()
@@ -13,7 +15,7 @@ class Primitive (
     val primitivePoints : Array<Coordinates> by lazy {
         Array(numPoints) { i ->
             val t = i * step
-            Coordinates(t * sin(t), t * cos(t))
+            Coordinates(center.x + t * sin((t + angle)), center.y + t * cos(t + angle))
         }
     }
 }
