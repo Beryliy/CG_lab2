@@ -18,4 +18,11 @@ class Primitive (
             Coordinates(center.x + t * sin((t + angle)), center.y + t * cos(t + angle))
         }
     }
+
+    fun getDislodgetPoints(rotateAngle : Float) = Array(numPoints) { i ->
+        val t = i * step
+        Coordinates(
+                center.x + 1.5f * t * sin(t + angle + rotateAngle),
+                center.y + 1.5f * t * cos(t + angle + rotateAngle))
+    }
 }

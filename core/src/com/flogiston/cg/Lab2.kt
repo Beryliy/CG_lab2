@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.utils.TimeUtils
 import com.flogiston.cg.domain.Coordinates
 import com.flogiston.cg.domain.Pattern
 import com.flogiston.cg.domain.Primitive
@@ -19,9 +20,11 @@ class Lab2 : ApplicationAdapter() {
     private lateinit var primitive : Primitive
     private lateinit var pattern : Pattern
     private lateinit var specialEffect : SpecialEffect
+    private var initialTimeMoment = -1L
 
     override fun create() {
         super.create()
+        initialTimeMoment = TimeUtils.nanoTime()
         shapeRenderer = ShapeRenderer()
         val step = (Math.PI / 16).toFloat()
         centerOfScreen = Coordinates(Gdx.graphics.width / 2.0f, Gdx.graphics.height / 2.0f)
@@ -37,14 +40,14 @@ class Lab2 : ApplicationAdapter() {
             coordinatesOfLastSpiral = p.primitivePoints.last()
         }
         pattern = Pattern(primitives.toList())
-        specialEffect = SpecialEffect(primitives, (Math.PI / 90).toFloat())
+        specialEffect = SpecialEffect(primitives, 0.0f)
     }
 
     override fun render() {
         super.render()
-        Gdx.gl.glClearColor(1f, 0f, 0f, 1f)
+        Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        drawPattern(centerOfScreen)
+        drawSpecialEffect(centerOfScreen)
     }
 
     override fun dispose() {
@@ -81,8 +84,28 @@ class Lab2 : ApplicationAdapter() {
         shapeRenderer.end()
     }
 
+    private fun drawSpecialEffect(position : Coordinates) {
+        val fractialPeriodPart = ((TimeUtils.nanoTime() - initialTimeMoment) % PERIOD) / PERIOD
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        shapeRenderer.color = Color.BLUE
+        specialEffect.rotationAngle = (Math.PI * 2 * fractialPeriodPart).toFloat()
+        specialEffect.primitives.forEach {
+            val dislodgedPoints = it.getDislodgetPoints(specialEffect.rotationAngle)
+            for (i in 0..it.numPoints - 2) {
+                shapeRenderer.line(
+                        position.x + dislodgedPoints[i].x,
+                        position.y + dislodgedPoints[i].y,
+                        position.x + dislodgedPoints[i + 1].x,
+                        position.y + dislodgedPoints[i + 1].y
+                )
+            }
+        }
+        shapeRenderer.end()
+    }
+
     companion object {
         const val NUMBER_OF_PRIMITIVES = 8
+        const val PERIOD = 4_000_000_000.0f
         const val SIZE = 32
     }
 }
