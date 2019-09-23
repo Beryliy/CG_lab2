@@ -9,13 +9,11 @@ class Primitive (
 ) {
     val tMin = 0.0f
     val tMax = (Math.PI * n).toFloat()
-
-    fun pointsOfPrimitive() : Array<Coordinates> {
-        val t = 0.0f
-        val numPoints = ((tMax - tMin) / step).toInt() + 1
-        val coordinates = Array(numPoints) { i ->
+    val numPoints = ((tMax - tMin) / step).toInt() + 1
+    val primitivePoints : Array<Coordinates> by lazy {
+        Array(numPoints) { i ->
+            val t = i * step
             Coordinates(t * sin(t), t * cos(t))
         }
-        return coordinates
     }
 }
