@@ -7,7 +7,13 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.InputListener
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.TimeUtils
+import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.flogiston.cg.domain.Coordinates
 import com.flogiston.cg.domain.Pattern
 import com.flogiston.cg.domain.Primitive
@@ -21,14 +27,18 @@ class Lab2 : ApplicationAdapter() {
     private lateinit var pattern : Pattern
     private lateinit var specialEffect : SpecialEffect
     private var initialTimeMoment = -1L
+    private lateinit var stage : Stage
+    var drawModele : (position : Coordinates) -> Unit = this::drawPrimitive
 
     override fun create() {
         super.create()
         initialTimeMoment = TimeUtils.nanoTime()
         shapeRenderer = ShapeRenderer()
+        centerOfScreen = Coordinates(Gdx.graphics.width / 2.0f + Gdx.graphics.width / 8.0f, Gdx.graphics.height / 2.0f)
+
+        //setup models
         val step = (Math.PI / 16).toFloat()
-        centerOfScreen = Coordinates(Gdx.graphics.width / 2.0f, Gdx.graphics.height / 2.0f)
-        primitive = Primitive(SIZE, centerOfScreen, step, 0.0f)
+        primitive = Primitive(SIZE, Coordinates(0.0f, 0.0f), step, 0.0f)
         var coordinatesOfLastSpiral = Coordinates(0.0f, 0.0f)
         var rotationAngle = 0.0f
         val rotationOffset = (Math.PI / 4).toFloat()
@@ -41,13 +51,31 @@ class Lab2 : ApplicationAdapter() {
         }
         pattern = Pattern(primitives.toList())
         specialEffect = SpecialEffect(primitives, 0.0f)
+
+        //setup buttons
+        stage = Stage(ScreenViewport())
+        Gdx.input.inputProcessor = stage
+        val buttonSkin = Skin(Gdx.files.internal("neon/skin/neon-ui.json"))
+        val buttonHeight = Gdx.graphics.height / 16.0f
+        val buttonWidth = Gdx.graphics.width / 3.0f
+        val primitiveButton = TextButton("primitive", buttonSkin)
+        setupButton(primitiveButton, this::drawPrimitive, Coordinates(0.0f, 0.0f), buttonWidth, buttonHeight)
+        val patternButton = TextButton("pattern", buttonSkin)
+        setupButton(patternButton, this::drawPattern, Coordinates(buttonWidth, 0.0f), buttonWidth, buttonHeight)
+        val specialEffectButton = TextButton("specialEffect", buttonSkin)
+        setupButton(specialEffectButton, this::drawSpecialEffect, Coordinates(buttonWidth + buttonWidth, 0.0f), buttonWidth, buttonHeight)
+        stage.addActor(primitiveButton)
+        stage.addActor(patternButton)
+        stage.addActor(specialEffectButton)
     }
 
     override fun render() {
         super.render()
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        drawSpecialEffect(centerOfScreen)
+        stage.act()
+        stage.draw()
+        drawModele(centerOfScreen)
     }
 
     override fun dispose() {
@@ -101,6 +129,22 @@ class Lab2 : ApplicationAdapter() {
             }
         }
         shapeRenderer.end()
+    }
+
+    private fun setupButton(
+            button : TextButton,
+            drawMethod : (position : Coordinates) -> Unit,
+            pos : Coordinates,
+            width : Float,
+            height : Float) {
+        button.setPosition(pos.x, pos.y)
+        button.setSize(width, height)
+        button.addListener(object : InputListener() {
+            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                drawModele = drawMethod
+                return true
+            }
+        })
     }
 
     companion object {
