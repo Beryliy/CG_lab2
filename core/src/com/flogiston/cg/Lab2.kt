@@ -10,13 +10,15 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.flogiston.cg.domain.Coordinates
 import com.flogiston.cg.domain.Pattern
 import com.flogiston.cg.domain.Primitive
+import com.flogiston.cg.domain.SpecialEffect
 
 class Lab2 : ApplicationAdapter() {
 
     private lateinit var shapeRenderer : ShapeRenderer
+    private lateinit var centerOfScreen : Coordinates
     private lateinit var primitive : Primitive
     private lateinit var pattern : Pattern
-    private lateinit var centerOfScreen : Coordinates
+    private lateinit var specialEffect : SpecialEffect
 
     override fun create() {
         super.create()
@@ -35,6 +37,7 @@ class Lab2 : ApplicationAdapter() {
             coordinatesOfLastSpiral = p.primitivePoints.last()
         }
         pattern = Pattern(primitives.toList())
+        specialEffect = SpecialEffect(primitives, (Math.PI / 90).toFloat())
     }
 
     override fun render() {
